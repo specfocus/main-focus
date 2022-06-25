@@ -117,7 +117,10 @@ export default class Multiplexer<T, Abort, Heartbeat, Timeout> implements AsyncI
     );
   }
 
-  public readonly [Symbol.asyncIterator] = (): AsyncIterator<T> => multiplexer.bind(this.state)(this.options);
+  public readonly [Symbol.asyncIterator] = (): AsyncIterator<T> => {
+    const fn = multiplexer.bind(this.state);
+    return fn(this.options) as AsyncIterator<T>;
+  };
 
   public readonly append = (src: AsyncIterable<T>): void => {
     this.state.set(

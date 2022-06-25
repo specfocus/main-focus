@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid';
+// import { nanoid } from 'nanoid/async';
 import type { MultiplexerOptions } from '../async/multiplexer';
 import Multiplexer from '../async/multiplexer';
 import startsWith from '@specfocus/spec-focus/many/starts-with';
@@ -11,6 +11,8 @@ import type { Heartbeat } from './defaults/heartbeat';
 import DEFAULT_HEARTBEAT from './defaults/heartbeat';
 import type { Timeout } from './defaults/timeout';
 import DEFAULT_TIMEOUT from './defaults/timeout';
+
+const nanoid = () => String(new Date().valueOf());
 
 const assign = <A extends Action>(target: Partial<A>, { what, ...source }: A): A => Object.assign({
   ...source,
@@ -26,7 +28,7 @@ export interface RouterOptions extends MultiplexerOptions<Abort, Heartbeat, Time
  * Action router
  * Keeps tracking of root for routing
  */
-class Router<Input extends Action = Action, Output extends Action = Action> extends Multiplexer<Output, Abort, Heartbeat, Timeout> implements Actor {
+class Router<Input extends Action = Action, Output extends Action = Action> extends Multiplexer<Output, Abort, Heartbeat, Timeout> implements Actor<Input> {
   static readonly options = <Input extends Action = Action, Output extends Action = Action>(
     path: string[],
     controller: AbortController
@@ -106,7 +108,7 @@ class Router<Input extends Action = Action, Output extends Action = Action> exte
     }
   };
 
-  public onAction = (action: Input): void => {
+  public onAction = async (action: Input): Promise<void> => {
     if (this._controller.signal.aborted) {
       return;
     }
